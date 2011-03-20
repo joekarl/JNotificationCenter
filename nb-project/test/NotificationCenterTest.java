@@ -138,46 +138,71 @@ public class NotificationCenterTest {
         Assert.assertTrue(notificationRecieved.getValue());
     }
 
-    class ThreadEvent {
+    @Test
+    public void notificationCreatesObserver() {
+        final NotificationCenterTest test = this;
+        final Notification.Center center = new Notification.Center();
+        final DualValueObject notificationRecieved = new DualValueObject();
+        center.addObserver(new Notification.Observer() {
 
-        private final Object lock = new Object();
+            public void notify(Notification aNotification) {
+                notificationRecieved.setValue1(true);
+                center.addObserver(new Notification.Observer() {
 
-        public void signal() {
-            synchronized (lock) {
-                lock.notify();
+                    public void notify(Notification aNotification) {
+                        notificationRecieved.setValue2(true);
+                    }
+                },
+                        "TestNotification2", null);
             }
-        }
+        },
+                "TestNotification", null);
 
-        public void await() throws InterruptedException {
-            synchronized (lock) {
-                lock.wait();
-            }
-        }
+
+
+
+        center.postNotification(new Notification("TestNotification", this, null));
+        Assert.assertFalse(notificationRecieved.getValues());
+
+        center.postNotification(new Notification("TestNotification2", this, null));
+
+        Assert.assertTrue(notificationRecieved.getValues());
+
+        notificationRecieved.setValue1(false);
+        notificationRecieved.setValue2(false);
+
+        center.postNotification(new Notification("TestNotification", this, null));
+        center.postNotification(new Notification("TestNotification2", this, null));
+        Assert.assertTrue(notificationRecieved.getValues());
     }
 
-    class ValueObject{
+    class ValueObject {
+
         boolean value;
-        public void setValue(boolean value){
+
+        public void setValue(boolean value) {
             this.value = value;
         }
 
-        public boolean getValue(){
+        public boolean getValue() {
             return value;
         }
     }
 
-    class DualValueObject{
+    class DualValueObject {
+
         boolean value;
-        public void setValue1(boolean value){
+
+        public void setValue1(boolean value) {
             this.value = value;
         }
-
         boolean value2;
-        public void setValue2(boolean value){
+
+        public void setValue2(boolean value) {
             this.value2 = value;
         }
 
-        public boolean getValues(){
+        public boolean getValues() {
             return value && value2;
         }
     }
