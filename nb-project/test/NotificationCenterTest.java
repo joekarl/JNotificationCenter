@@ -3,8 +3,7 @@
  * and open the template in the editor.
  */
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.jNotificationCenter.Notification;
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.AfterClass;
