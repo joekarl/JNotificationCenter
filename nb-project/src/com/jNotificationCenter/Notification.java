@@ -1,4 +1,3 @@
-
 package com.jNotificationCenter;
 /*
  * To change this template, choose Tools | Templates
@@ -175,6 +174,7 @@ public final class Notification extends Object implements Externalizable, Compar
 //	---------------------------------------------------------------------------
     public static interface Observer {
         //note will be called on a separate thread
+
         public void notify(Notification aNotification);
     }
 
@@ -319,7 +319,7 @@ public final class Notification extends Object implements Externalizable, Compar
             throw new IllegalArgumentException("Notification.Center.observersForKey: null observer.");
         }
 
-        public void postNotification(Notification aNotification) {
+        public void postNotification(Notification aNotification, boolean async) {
             if (aNotification != null) {
                 String aName = aNotification.name();
                 Object anObject = aNotification.object();
@@ -350,16 +350,18 @@ public final class Notification extends Object implements Externalizable, Compar
                 }
 
                 if (aCollection.isEmpty() == false) {
-//                    Task aTask = new Task(aCollection, aNotification);
-//                    Thread aThread = new Thread(aTask, aTask.getClass().getName());
-//
-//                    aThread.setDaemon(true);
-//                    aThread.setPriority(Thread.MIN_PRIORITY);
-//                    aThread.start();
-                    for(Observer observer : aCollection){
-                        observer.notify(aNotification);
-                    }
+                    if (async) {
+                        Task aTask = new Task(aCollection, aNotification);
+                        Thread aThread = new Thread(aTask, aTask.getClass().getName());
 
+                        aThread.setDaemon(true);
+                        aThread.setPriority(Thread.MIN_PRIORITY);
+                        aThread.start();
+                    } else {
+                        for (Observer observer : aCollection) {
+                            observer.notify(aNotification);
+                        }
+                    }
 
                 }
 
@@ -367,6 +369,10 @@ public final class Notification extends Object implements Externalizable, Compar
             }
 
             throw new IllegalArgumentException("Notification.Center.postNotification: null notification.");
+        }
+
+        public void postNotification(Notification aNotification) {
+            postNotification(aNotification, false);
         }
     }
 
